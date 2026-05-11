@@ -1,0 +1,775 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arka Banerjee | Futuristic Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #05070f;
+      --panel: rgba(12, 18, 34, 0.66);
+      --text: #eef8ff;
+      --muted: #a9b7d0;
+      --cyan: #00e5ff;
+      --pink: #ff3df2;
+      --lime: #95ff4f;
+      --gold: #ffb84d;
+      --border: rgba(255,255,255,.16);
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family: Poppins, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(0,229,255,.22), transparent 30rem),
+        radial-gradient(circle at 85% 30%, rgba(255,61,242,.18), transparent 28rem),
+        linear-gradient(135deg, #05070f, #081224 42%, #0b0820 72%, #05070f);
+    }
+
+    body.loading { overflow: hidden; }
+    a { color: inherit; text-decoration: none; }
+    ::selection { color: #041017; background: var(--cyan); }
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      display: grid;
+      place-items: center;
+      background: #03050b;
+      transition: .7s var(--ease);
+    }
+
+    .loader::before {
+      content: "";
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: linear-gradient(#03050b,#03050b) padding-box,
+        conic-gradient(var(--cyan), var(--pink), var(--lime), var(--cyan)) border-box;
+      box-shadow: 0 0 50px rgba(0,229,255,.48);
+      animation: spin 1s linear infinite;
+    }
+
+    .loader span {
+      position: absolute;
+      margin-top: 145px;
+      color: var(--muted);
+      font: 700 12px Orbitron, sans-serif;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    body.loaded .loader { opacity: 0; visibility: hidden; }
+
+    .bg, .grid, .blob, .wave, .particles, canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .bg { z-index: -5; overflow: hidden; }
+    .grid {
+      background-image:
+        linear-gradient(rgba(0,229,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,61,242,.05) 1px, transparent 1px);
+      background-size: 70px 70px;
+      mask-image: linear-gradient(transparent, #000 20%, #000 70%, transparent);
+      transform: perspective(850px) rotateX(58deg) translateY(150px) scale(1.45);
+      transform-origin: bottom;
+      animation: gridMove 18s linear infinite;
+    }
+
+    .blob {
+      width: 44vw;
+      height: 44vw;
+      border-radius: 50%;
+      filter: blur(75px);
+      opacity: .35;
+      animation: float 9s ease-in-out infinite alternate;
+    }
+
+    .blob.one { left: -12vw; top: 12vh; background: var(--cyan); }
+    .blob.two { right: -12vw; top: 18vh; background: var(--pink); animation-delay: -3s; }
+    .blob.three { left: 35vw; bottom: -20vw; background: var(--lime); animation-delay: -6s; }
+
+    .wave {
+      top: 18vh;
+      height: 160px;
+      opacity: .26;
+      filter: blur(22px);
+      background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(0,229,255,.42) 22px 24px, transparent 24px 44px);
+      clip-path: polygon(0 45%,8% 35%,15% 55%,24% 30%,34% 62%,44% 40%,54% 58%,64% 30%,74% 60%,84% 38%,100% 50%,100% 100%,0 100%);
+      animation: wave 9s ease-in-out infinite;
+    }
+
+    .cursor-dot, .cursor-ring, .cursor-glow {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 80;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    .cursor-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 18px var(--cyan);
+    }
+
+    .cursor-ring {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(0,229,255,.8);
+      border-radius: 50%;
+      transition: .2s var(--ease);
+    }
+
+    .cursor-glow {
+      z-index: 2;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,.22), rgba(255,61,242,.14) 40%, transparent 68%);
+      filter: blur(34px);
+    }
+
+    body.cursor-ready .cursor-dot,
+    body.cursor-ready .cursor-ring,
+    body.cursor-ready .cursor-glow { opacity: 1; }
+    body.cursor-hover .cursor-ring { width: 54px; height: 54px; border-color: var(--pink); }
+    canvas { z-index: 70; }
+
+    .navbar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      z-index: 60;
+      width: min(1120px, calc(100% - 32px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(7,12,24,.58);
+      box-shadow: 0 18px 55px rgba(0,0,0,.34);
+      backdrop-filter: blur(20px);
+      transform: translateX(-50%);
+    }
+
+    .navbar.scrolled { border-color: rgba(0,229,255,.35); background: rgba(7,12,24,.82); }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font: 800 14px Orbitron, sans-serif;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .brand b {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      aspect-ratio: 1;
+      border: 1px solid rgba(0,229,255,.45);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(0,229,255,.18), rgba(255,61,242,.16));
+      box-shadow: 0 0 28px rgba(0,229,255,.24);
+    }
+
+    .nav-links { display: flex; gap: 6px; }
+    .nav-links a {
+      padding: 10px 13px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      transition: .25s var(--ease);
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: white;
+      background: rgba(255,255,255,.07);
+      text-shadow: 0 0 18px rgba(0,229,255,.6);
+    }
+
+    .menu {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      color: white;
+      font-size: 24px;
+    }
+
+    section {
+      width: min(1120px, calc(100% - 32px));
+      margin: auto;
+      padding: 105px 0;
+    }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 60px;
+      align-items: center;
+      padding-top: 150px;
+    }
+
+    .tag {
+      margin: 0 0 16px;
+      color: var(--lime);
+      font: 800 12px Orbitron, sans-serif;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-family: Orbitron, sans-serif;
+      line-height: .95;
+      letter-spacing: 0;
+      background: linear-gradient(90deg, #fff, var(--cyan), var(--pink), var(--lime));
+      background-size: 220%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradient 5s ease-in-out infinite alternate;
+    }
+
+    h1 {
+      display: grid;
+      font-size: clamp(54px, 10vw, 124px);
+      filter: drop-shadow(0 0 28px rgba(0,229,255,.25));
+    }
+
+    h2 { font-size: clamp(34px, 6vw, 62px); margin-bottom: 30px; }
+    .typing { min-height: 36px; margin: 24px 0 0; color: var(--muted); font-size: clamp(17px, 2.2vw, 22px); }
+    .caret {
+      display: inline-block;
+      width: 10px;
+      height: 22px;
+      margin-left: 4px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px var(--cyan);
+      transform: translateY(4px);
+      animation: blink .8s steps(2) infinite;
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 34px; }
+    .btn {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 156px;
+      min-height: 52px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-weight: 800;
+      transition: .28s var(--ease);
+    }
+
+    .btn.primary { color: #041017; border: 0; background: linear-gradient(90deg, var(--cyan), var(--lime)); box-shadow: 0 0 34px rgba(0,229,255,.32); }
+    .btn.ghost { background: rgba(255,255,255,.06); backdrop-filter: blur(18px); }
+    .btn:hover { transform: translateY(-5px); box-shadow: 0 0 36px rgba(0,229,255,.28); border-color: rgba(0,229,255,.6); }
+
+    .orbit { position: relative; min-height: 520px; }
+    .glass {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.035)), var(--panel);
+      box-shadow: 0 24px 80px rgba(0,0,0,.42);
+      backdrop-filter: blur(22px) saturate(145%);
+      transform-style: preserve-3d;
+    }
+
+    .glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 1px;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(0,229,255,.75), transparent 32%, rgba(255,61,242,.7), transparent 70%, rgba(149,255,79,.6));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      opacity: .45;
+      pointer-events: none;
+      transition: .3s var(--ease);
+    }
+
+    .glass:hover::before { opacity: 1; }
+    .chip {
+      position: absolute;
+      padding: 20px;
+      animation: cardFloat 5s ease-in-out infinite alternate;
+    }
+
+    .chip span, .chip small {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .chip b {
+      display: block;
+      margin: 7px 0;
+      font-family: Orbitron, sans-serif;
+    }
+
+    .chip .mini { color: var(--cyan); font: 800 11px Orbitron, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+    .chip.main { top: 9%; left: 5%; width: min(380px, 90%); min-height: 175px; }
+    .chip.a { top: 52%; left: 0; width: 190px; animation-delay: -1.2s; }
+    .chip.b { top: 34%; right: 0; width: 170px; animation-delay: -2.2s; }
+    .chip.c { right: 12%; bottom: 9%; width: 200px; animation-delay: -3s; }
+
+    .about-card, .progress-box, .contact-card { padding: clamp(24px, 5vw, 48px); }
+    .about-card h3 { margin: 0 0 18px; font-size: clamp(24px, 4vw, 36px); }
+    .about-card p, .contact-card p { color: var(--muted); line-height: 1.9; }
+    .sign { margin-top: 26px; font: 800 15px Orbitron, sans-serif; }
+    .heart { color: #ff5d8f; text-shadow: 0 0 18px #ff5d8f; animation: pulse 1.3s ease-in-out infinite; }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .skill {
+      min-height: 275px;
+      padding: 24px;
+      transition: .28s var(--ease);
+    }
+
+    .skill:hover { transform: translateY(-8px); box-shadow: 0 30px 90px rgba(0,0,0,.48), 0 0 34px rgba(255,61,242,.18); }
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 78px;
+      aspect-ratio: 1;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.07);
+      color: var(--cyan);
+      font: 900 24px Orbitron, sans-serif;
+      box-shadow: inset 0 0 24px rgba(255,255,255,.06), 0 0 24px rgba(0,229,255,.12);
+    }
+
+    .icon.java { color: var(--gold); }
+    .icon.js { color: #111; background: linear-gradient(135deg, #f7df1e, #ffb84d); }
+    .icon.html { color: #ff6a3d; }
+    .skill h3 { margin: 0 0 12px; font-family: Orbitron, sans-serif; }
+    .skill p { margin: 0; color: var(--muted); line-height: 1.75; }
+
+    .progress-box { display: grid; gap: 22px; }
+    .label { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700; }
+    .label b { color: var(--cyan); font-family: Orbitron, sans-serif; }
+    .track {
+      height: 13px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+    }
+
+    .fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--pink), var(--lime));
+      box-shadow: 0 0 22px rgba(0,229,255,.5);
+      transition: width 1.4s var(--ease);
+    }
+
+    .progress.in-view .fill { width: var(--value); }
+    .contact-card { max-width: 850px; margin: auto; text-align: center; }
+    .socials { display: flex; justify-content: center; gap: 16px; margin-top: 28px; }
+    .socials a {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.07);
+      font-size: 24px;
+      transition: .28s var(--ease);
+    }
+
+    .socials a:hover { transform: translateY(-7px) rotate(4deg); border-color: var(--cyan); box-shadow: 0 0 34px rgba(0,229,255,.32); }
+    footer { padding: 42px 16px 54px; color: var(--muted); text-align: center; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(35px);
+      transition: .8s var(--ease);
+    }
+
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .ripple {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.6);
+      transform: translate(-50%,-50%) scale(0);
+      pointer-events: none;
+      animation: ripple .7s ease-out;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes gridMove { to { background-position: 0 70px, 70px 0; } }
+    @keyframes float { to { transform: translate(6vw, -5vh) scale(1.08); } }
+    @keyframes wave { 50% { transform: translateX(4%) scaleY(1.18); } }
+    @keyframes gradient { to { background-position: 100%; } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes cardFloat { to { transform: translateY(-18px); } }
+    @keyframes pulse { 50% { transform: scale(1.18); } }
+    @keyframes ripple { to { opacity: 0; transform: translate(-50%,-50%) scale(18); } }
+
+    @media (hover: hover) and (pointer: fine) {
+      body, body * { cursor: none; }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .cursor-dot, .cursor-ring, .cursor-glow, canvas { display: none; }
+    }
+
+    @media (max-width: 930px) {
+      .hero { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+      .orbit { min-height: 430px; }
+    }
+
+    @media (max-width: 720px) {
+      .navbar { top: 8px; width: calc(100% - 16px); }
+      .menu { display: block; }
+      .nav-links {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        display: grid;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: rgba(7,12,24,.92);
+        backdrop-filter: blur(18px);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-10px);
+        transition: .25s var(--ease);
+      }
+
+      .nav-links.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+      section { width: calc(100% - 16px); padding: 82px 0; }
+      .hero { padding-top: 140px; gap: 34px; }
+      .actions { display: grid; }
+      .btn { width: 100%; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .skill { min-height: auto; }
+      .chip.main { left: 0; width: 100%; }
+      .chip.a { top: 58%; }
+      .chip.b { top: 46%; }
+      .chip.c { right: 8%; bottom: 0; }
+    }
+
+    @media (max-width: 420px) {
+      .brand span { display: none; }
+      h1 { font-size: 46px; }
+      h2 { font-size: 31px; }
+      .chip { width: 160px !important; }
+      .chip.main { width: 100% !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loader"><span>Initializing Arka.exe</span></div>
+  <canvas id="trail"></canvas>
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+  <div class="cursor-glow"></div>
+
+  <div class="bg" aria-hidden="true">
+    <div class="grid"></div>
+    <div class="wave"></div>
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+    <div class="blob three"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <header class="navbar" id="navbar">
+    <a class="brand magnetic" href="#home"><b>AB</b><span>Arka</span></a>
+    <button class="menu magnetic" id="menu" aria-label="Open menu">≡</button>
+    <nav class="nav-links" id="nav">
+      <a class="active" href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#abilities">Abilities</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div>
+        <p class="tag reveal">16 • PC powered • Future focused</p>
+        <h1 class="reveal"><span>ARKA</span><span>BANERJEE</span></h1>
+        <p class="typing reveal"><span id="type"></span><span class="caret"></span></p>
+        <div class="actions reveal">
+          <a class="btn primary ripple-link magnetic" href="#about">Explore</a>
+          <a class="btn ghost ripple-link magnetic" href="#contact">Contact Me</a>
+        </div>
+      </div>
+
+      <div class="orbit">
+        <div class="chip main glass tilt"><span class="mini">Status</span><b>Building Experiences</b><small>Creative code, clean UI, gaming energy.</small></div>
+        <div class="chip a glass tilt"><span class="mini">XP</span><b>Web Builder</b></div>
+        <div class="chip b glass tilt"><span class="mini">Mode</span><b>Gamer</b></div>
+        <div class="chip c glass tilt"><span class="mini">Core</span><b>Developer</b></div>
+      </div>
+    </section>
+
+    <section id="about">
+      <p class="tag reveal">Origin log</p>
+      <h2 class="reveal">About Me</h2>
+      <article class="about-card glass tilt reveal">
+        <h3>Building experiences.</h3>
+        <p>I'm Arka Banerjee, a 16-year-old developer who enjoys building interactive websites and exploring new technologies. I spend most of my time on my PC, experimenting with creative designs, and gaming.</p>
+        <p>I like turning ideas into real projects and constantly improving my skills in web development. I recently started trading, and I'm a gamer who plays a lot of games and loves making groups and new friends.</p>
+        <p>This website was made by me. I took some help from AI, but most of the work was done by me.</p>
+        <p class="sign">— Written by Arka <span class="heart">♥</span></p>
+      </article>
+    </section>
+
+    <section id="skills">
+      <p class="tag reveal">Tech stack</p>
+      <h2 class="reveal">What I Work With</h2>
+      <div class="skills-grid">
+        <article class="skill glass tilt reveal"><div class="icon java">J</div><h3>Java</h3><p>Logic, structure, and problem-solving foundations.</p></article>
+        <article class="skill glass tilt reveal"><div class="icon js">JS</div><h3>JavaScript</h3><p>Interactive interfaces, animations, and dynamic web ideas.</p></article>
+        <article class="skill glass tilt reveal"><div class="icon html">&lt;/&gt;</div><h3>HTML</h3><p>Clean structure for fast, responsive web experiences.</p></article>
+        <article class="skill glass tilt reveal"><div class="icon">🌐</div><h3>Web Developer</h3><p>Designing, building, and polishing full web pages.</p></article>
+      </div>
+    </section>
+
+    <section id="abilities">
+      <p class="tag reveal">Power levels</p>
+      <h2 class="reveal">What I Can Do</h2>
+      <div class="progress-box glass reveal">
+        <div class="progress" style="--value:85%"><div class="label"><span>HTML / CSS</span><b>85%</b></div><div class="track"><span class="fill"></span></div></div>
+        <div class="progress" style="--value:70%"><div class="label"><span>JavaScript</span><b>70%</b></div><div class="track"><span class="fill"></span></div></div>
+        <div class="progress" style="--value:60%"><div class="label"><span>Java</span><b>60%</b></div><div class="track"><span class="fill"></span></div></div>
+        <div class="progress" style="--value:75%"><div class="label"><span>UI / UX Design</span><b>75%</b></div><div class="track"><span class="fill"></span></div></div>
+        <div class="progress" style="--value:80%"><div class="label"><span>Web Development</span><b>80%</b></div><div class="track"><span class="fill"></span></div></div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="contact-card glass tilt reveal">
+        <p class="tag">Connect</p>
+        <h2>Let’s Build Something Electric</h2>
+        <p>Gaming mind, developer focus, and a love for turning ideas into sharp web experiences.</p>
+        <div class="socials">
+          <a class="ripple-link magnetic" href="mailto:arka@example.com" aria-label="Email">✉</a>
+          <a class="ripple-link magnetic" href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub">⌘</a>
+          <a class="ripple-link magnetic" href="https://discord.com/" target="_blank" rel="noreferrer" aria-label="Discord">☄</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Designed &amp; Built by Arka Banerjee</footer>
+
+  <script>
+    const body = document.body;
+    const navbar = document.getElementById("navbar");
+    const menu = document.getElementById("menu");
+    const nav = document.getElementById("nav");
+    const links = [...document.querySelectorAll(".nav-links a")];
+    const type = document.getElementById("type");
+    const dot = document.querySelector(".cursor-dot");
+    const ring = document.querySelector(".cursor-ring");
+    const glow = document.querySelector(".cursor-glow");
+    const canvas = document.getElementById("trail");
+    const ctx = canvas.getContext("2d");
+    const desktopPointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    body.classList.add("loading");
+    addEventListener("load", () => setTimeout(() => {
+      body.classList.remove("loading");
+      body.classList.add("loaded");
+    }, 650));
+
+    menu.addEventListener("click", () => nav.classList.toggle("open"));
+    links.forEach(link => link.addEventListener("click", () => nav.classList.remove("open")));
+    addEventListener("scroll", () => navbar.classList.toggle("scrolled", scrollY > 25), { passive: true });
+
+    const words = "Web Builder • Gamer • Developer";
+    let i = 0, dir = 1;
+    function typing() {
+      type.textContent = words.slice(0, i);
+      if (i === words.length) { dir = -1; setTimeout(typing, 1300); i += dir; return; }
+      if (i === 0 && dir < 0) { dir = 1; setTimeout(typing, 350); i += dir; return; }
+      i += dir;
+      setTimeout(typing, dir > 0 ? 75 : 34);
+    }
+    typing();
+
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("visible");
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: .16 });
+    document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+
+    const progressObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.isIntersecting && entry.target.classList.add("in-view"));
+    }, { threshold: .5 });
+    document.querySelectorAll(".progress").forEach(el => progressObserver.observe(el));
+
+    const navObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        links.forEach(link => link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id));
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    document.querySelectorAll("main section").forEach(section => navObserver.observe(section));
+
+    const particles = document.getElementById("particles");
+    for (let p = 0; p < Math.min(70, innerWidth / 18); p++) {
+      const span = document.createElement("span");
+      span.style.cssText = `
+        position:absolute; left:${Math.random()*100}%; top:${Math.random()*100}%;
+        width:2px; height:2px; border-radius:50%; background:${p%2 ? "#ff3df2" : "#00e5ff"};
+        box-shadow:0 0 14px currentColor; opacity:${.25+Math.random()*.55};
+        animation: particle ${10+Math.random()*16}s linear infinite; animation-delay:${Math.random()*-16}s;
+      `;
+      particles.appendChild(span);
+    }
+    const style = document.createElement("style");
+    style.textContent = "@keyframes particle{to{transform:translate3d(60px,-110vh,0);opacity:.1}}";
+    document.head.appendChild(style);
+
+    const pointer = { x: innerWidth/2, y: innerHeight/2, rx: innerWidth/2, ry: innerHeight/2, gx: innerWidth/2, gy: innerHeight/2 };
+    const trail = [];
+    let lastTrail = 0;
+
+    function sizeCanvas() {
+      const ratio = devicePixelRatio || 1;
+      canvas.width = innerWidth * ratio;
+      canvas.height = innerHeight * ratio;
+      canvas.style.width = innerWidth + "px";
+      canvas.style.height = innerHeight + "px";
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    if (desktopPointer) {
+      sizeCanvas();
+      addEventListener("resize", sizeCanvas);
+      addEventListener("pointermove", e => {
+        pointer.x = e.clientX;
+        pointer.y = e.clientY;
+        body.classList.add("cursor-ready");
+        const now = performance.now();
+        if (now - lastTrail > 24) {
+          lastTrail = now;
+          trail.push({ x: pointer.x, y: pointer.y, vx: (Math.random()-.5)*1.6, vy: (Math.random()-.5)*1.6, life: 1, size: 2+Math.random()*4, color: Math.random() > .5 ? "0,229,255" : "255,61,242" });
+        }
+      }, { passive: true });
+
+      document.querySelectorAll("a, button, .tilt").forEach(el => {
+        el.addEventListener("pointerenter", () => body.classList.add("cursor-hover"));
+        el.addEventListener("pointerleave", () => body.classList.remove("cursor-hover"));
+      });
+
+      function cursorLoop() {
+        pointer.rx += (pointer.x - pointer.rx) * .22;
+        pointer.ry += (pointer.y - pointer.ry) * .22;
+        pointer.gx += (pointer.x - pointer.gx) * .075;
+        pointer.gy += (pointer.y - pointer.gy) * .075;
+        dot.style.transform = `translate(${pointer.x}px,${pointer.y}px) translate(-50%,-50%)`;
+        ring.style.transform = `translate(${pointer.rx}px,${pointer.ry}px) translate(-50%,-50%)`;
+        glow.style.transform = `translate(${pointer.gx}px,${pointer.gy}px) translate(-50%,-50%)`;
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+        for (let t = trail.length - 1; t >= 0; t--) {
+          const part = trail[t];
+          part.x += part.vx; part.y += part.vy; part.life -= .025;
+          if (part.life <= 0) { trail.splice(t, 1); continue; }
+          ctx.beginPath();
+          ctx.arc(part.x, part.y, part.size * part.life, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${part.color},${part.life*.7})`;
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = `rgba(${part.color},${part.life})`;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        requestAnimationFrame(cursorLoop);
+      }
+      cursorLoop();
+    }
+
+    document.querySelectorAll(".tilt").forEach(card => {
+      card.addEventListener("pointermove", e => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - .5;
+        const y = (e.clientY - r.top) / r.height - .5;
+        card.style.transform = `perspective(900px) rotateX(${y*-10}deg) rotateY(${x*12}deg) translateY(-4px)`;
+      });
+      card.addEventListener("pointerleave", () => card.style.transform = "");
+    });
+
+    document.querySelectorAll(".magnetic").forEach(el => {
+      el.addEventListener("pointermove", e => {
+        const r = el.getBoundingClientRect();
+        el.style.transform = `translate(${(e.clientX-r.left-r.width/2)*.18}px, ${(e.clientY-r.top-r.height/2)*.18}px)`;
+      });
+      el.addEventListener("pointerleave", () => el.style.transform = "");
+    });
+
+    document.querySelectorAll(".ripple-link").forEach(el => {
+      el.addEventListener("click", e => {
+        const r = el.getBoundingClientRect();
+        const rip = document.createElement("span");
+        rip.className = "ripple";
+        rip.style.left = e.clientX - r.left + "px";
+        rip.style.top = e.clientY - r.top + "px";
+        el.appendChild(rip);
+        rip.addEventListener("animationend", () => rip.remove());
+      });
+    });
+  </script>
+</body>
+</html>
